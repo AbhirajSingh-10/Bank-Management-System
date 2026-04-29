@@ -20,7 +20,7 @@ public class SignUp extends JFrame implements ActionListener {
 
     long first4 = (ran.nextLong() %9000L) +1000L;
 
-    String first = ""+Math.abs(first4);
+    String first = " "+Math.abs(first4);
 
     SignUp(){
         super("APPLICATION FORM");
@@ -198,7 +198,46 @@ public class SignUp extends JFrame implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
+        String formno = first;
+        String name = textName.getText();
+        String fname = textFname.getText();
+        String dob = ((JTextField) dateChooser.getDateEditor().getUiComponent()).getText();
+        String gender = null;
+        if(r1.isSelected()){
+            gender = "Male";
+        }else if(r2.isSelected()){
+            gender = "Female";
+        }
 
+        String email = textEmail.getText();
+
+        String marital = null;
+        if(m1.isSelected()){
+            marital = "Married";
+        }else if(m2.isSelected()){
+            marital = "Unmarried";
+        }else if (m3.isSelected()){
+            marital = "Other";
+        }
+        String address = textAdd.getText();
+        String city = textCity.getText();
+        String pincode = textPin.getText();
+        String state = textState.getText();
+
+        try{
+            if(textName.getText().equals("")){
+                JOptionPane.showMessageDialog(null,"Fill all the fields");
+            }else{
+                Conn conn1 = new Conn();
+                String q = "insert into signup values('"+formno+"', '"+name+"', '"+fname+"', '"+dob+"', '"+gender+"', '"+email+"', '"+marital+"', '"+address+"', '"+city+"', '"+pincode+"', '"+state+"' )";
+                conn1.statement.executeUpdate(q);
+                new SignUp2(formno);
+                setVisible(false);
+            }
+
+        }catch (Exception E){
+            E.printStackTrace();
+        }
     }
 
     public static void main(String[] args) {
