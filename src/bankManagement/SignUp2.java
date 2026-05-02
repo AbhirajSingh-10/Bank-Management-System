@@ -15,7 +15,7 @@ public class SignUp2 extends JFrame implements ActionListener {
     SignUp2(String formno){
         super("APPLICATION FORM");
 
-        ImageIcon i1 = new ImageIcon(ClassLoader.getSystemResource("icon/bank.png"));
+        ImageIcon i1 = new ImageIcon(ClassLoader.getSystemResource("icons/bank.png"));
         Image i2 = i1.getImage().getScaledInstance(100,100,Image.SCALE_DEFAULT);
         ImageIcon i3 = new ImageIcon(i2);
         JLabel image = new JLabel(i3);
@@ -183,6 +183,52 @@ public class SignUp2 extends JFrame implements ActionListener {
     }
     @Override
     public void actionPerformed(ActionEvent e) {
+        String rel = (String) comboBox.getSelectedItem();
+        String cate = (String) comboBox2.getSelectedItem();
+        String inc = (String) comboBox3.getSelectedItem();
+        String edu = (String) comboBox4.getSelectedItem();
+        String occ = (String) comboBox5.getSelectedItem();
+
+        String pan = textPan.getText();
+        String aadhar = textAadhar.getText();
+
+        String scitizen = " ";
+        if(r1.isSelected()){
+            scitizen= "Yes";
+        }else if(r2.isSelected()){
+            scitizen = "No";
+        }
+
+        String eaccount = " ";
+        if(e1.isSelected()){
+            scitizen= "Yes";
+        }else if(e2.isSelected()){
+            scitizen = "No";
+        }
+
+        try{
+            if(textPan.getText().isEmpty() || textAadhar.getText().isEmpty()){
+                JOptionPane.showMessageDialog(null,"Fill all fields");
+            }else {
+                Conn c1 = new Conn();
+                String q = "INSERT INTO signuptwo VALUES('"
+                        + formno + "', '"
+                        + rel + "', '"
+                        + cate + "', '"
+                        + inc + "', '"
+                        + edu + "', '"
+                        + occ + "', '"
+                        + pan + "', '"
+                        + aadhar + "', '"
+                        + scitizen + "', '"
+                        + eaccount + "')";
+                c1.statement.executeUpdate(q);
+                new SignUp3(formno);
+                setVisible(false);
+            }
+        } catch (Exception ex) {
+            ex.printStackTrace();
+        }
 
     }
 
