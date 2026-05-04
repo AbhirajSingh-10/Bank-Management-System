@@ -62,6 +62,7 @@ public class Login extends JFrame implements ActionListener {
         button1.setForeground(Color.WHITE);
         button1.setBackground(Color.BLACK);
         button1.setBounds(300,300,100,30);
+        getRootPane().setDefaultButton(button1);
         button1.addActionListener(this);
         add(button1);
 
@@ -105,6 +106,11 @@ public class Login extends JFrame implements ActionListener {
                 Conn c = new Conn();
                 String card_no = textField.getText();
                 String pin = new String(passwordField.getPassword());
+                if(card_no.isEmpty() || pin.isEmpty()){
+                    JOptionPane.showMessageDialog(null,
+                            "Please fill all fields");
+                    return;
+                }
 
                 String q = "select * from login where card_no = '"+card_no+"' and pin = '"+pin+"'";
                 ResultSet resultSet = c.statement.executeQuery(q);
@@ -123,6 +129,7 @@ public class Login extends JFrame implements ActionListener {
             }
         }catch (Exception exp){
             exp.printStackTrace();
+            JOptionPane.showMessageDialog(null,"Something went wrong. Please try again.");
         }
     }
 

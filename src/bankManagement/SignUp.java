@@ -10,7 +10,7 @@ import java.util.Random;
 
 public class SignUp extends JFrame implements ActionListener {
 
-    JRadioButton r1, r2, m1,m2,m3;
+    JRadioButton r1, r2,r3, m1,m2;
     JButton next;
 
     JTextField textName, textFname, textEmail, textAdd, textCity, textPin, textState;
@@ -18,9 +18,9 @@ public class SignUp extends JFrame implements ActionListener {
 
     Random ran = new Random();
 
-    long first4 = (ran.nextLong() %9000L) +1000L;
+    long first4 = 1000 + ran.nextInt(9000);
 
-    String first = " "+Math.abs(first4);
+    String first = String.valueOf(first4);
 
     SignUp(){
         super("APPLICATION FORM");
@@ -94,9 +94,16 @@ public class SignUp extends JFrame implements ActionListener {
         r2.setBounds(450,290,90,30);
         add(r2);
 
+        r3 = new JRadioButton("Other");
+        r3.setBackground(new Color(222,255,228));
+        r3.setBounds(635,290,100,30);
+        r3.setFont(new Font("Raleway", Font.BOLD,14));
+        add(r3);
+
         ButtonGroup buttonGroup = new ButtonGroup();
         buttonGroup.add(r1);
         buttonGroup.add(r2);
+        buttonGroup.add(r3);
 
 
         JLabel labelEmail = new JLabel("Email address :");
@@ -126,16 +133,10 @@ public class SignUp extends JFrame implements ActionListener {
         m2.setFont(new Font("Raleway", Font.BOLD,14));
         add(m2);
 
-        m3 = new JRadioButton("Other");
-        m3.setBackground(new Color(222,255,228));
-        m3.setBounds(635,440,100,30);
-        m3.setFont(new Font("Raleway", Font.BOLD,14));
-        add(m3);
 
         ButtonGroup buttonGroup1 = new ButtonGroup();
         buttonGroup1.add(m1);
         buttonGroup1.add(m2);
-        buttonGroup1.add(m3);
 
         JLabel labelAdd = new JLabel("Address :");
         labelAdd.setFont(new Font("Raleway", Font.BOLD, 20));
@@ -183,6 +184,7 @@ public class SignUp extends JFrame implements ActionListener {
         next.setForeground(Color.WHITE);
         next.setBounds(620,710,80,30);
         next.addActionListener(this);
+        getRootPane().setDefaultButton(next);
         add(next);
 
 
@@ -200,44 +202,78 @@ public class SignUp extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         String formno = first;
-        String name = textName.getText();
-        String fname = textFname.getText();
-        String dob = ((JTextField) dateChooser.getDateEditor().getUiComponent()).getText();
+        String name = textName.getText().trim();
+        String fname = textFname.getText().trim();
+        String dob = ((JTextField) dateChooser.getDateEditor().getUiComponent()).getText().trim();
         String gender = null;
         if(r1.isSelected()){
             gender = "Male";
         }else if(r2.isSelected()){
             gender = "Female";
+        }else if(r3.isSelected()){
+            gender = "Other";
         }
 
-        String email = textEmail.getText();
+        String email = textEmail.getText().trim();
 
         String marital = null;
         if(m1.isSelected()){
             marital = "Married";
         }else if(m2.isSelected()){
             marital = "Unmarried";
-        }else if (m3.isSelected()){
-            marital = "Other";
         }
-        String address = textAdd.getText();
-        String city = textCity.getText();
-        String pincode = textPin.getText();
-        String state = textState.getText();
+        String address = textAdd.getText().trim();
+        String city = textCity.getText().trim();
+        String pincode = textPin.getText().trim();
+        String state = textState.getText().trim();
 
         try{
-            if(textName.getText().equals("")){
-                JOptionPane.showMessageDialog(null,"Fill all the fields");
-            }else{
-                Conn conn1 = new Conn();
-                String q = "insert into signup values('"+formno+"', '"+name+"', '"+fname+"', '"+dob+"', '"+gender+"', '"+email+"', '"+marital+"', '"+address+"', '"+city+"', '"+pincode+"', '"+state+"' )";
-                conn1.statement.executeUpdate(q);
-                new SignUp2(formno);
-                dispose();
+            if(name.isEmpty() ||
+                    fname.isEmpty() ||
+                    dob.isEmpty() ||
+                    gender == null ||
+                    marital == null ||
+                    address.isEmpty() ||
+                    city.isEmpty() ||
+                    pincode.isEmpty() ||
+                    state.isEmpty()){
+
+                JOptionPane.showMessageDialog(
+                        null,
+                        "Please fill all fields");
+
+                return;
             }
+            if(!email.matches(
+                    "^[A-Za-z0-9+_.-]+@(.+)$")){
+
+                JOptionPane.showMessageDialog(
+                        null,
+                        "Invalid Email");
+
+                return;
+            }
+
+            if(!pincode.matches("\\d{6}")){
+
+                JOptionPane.showMessageDialog(
+                        null,
+                        "Invalid Pincode");
+
+                return;
+            }
+
+            Conn conn1 = new Conn();
+            String q = "insert into signup values('"+formno+"', '"+name+"', '"+fname+"', '"+dob+"', '"+gender+"', '"+email+"', '"+marital+"', '"+address+"', '"+city+"', '"+pincode+"', '"+state+"' )";
+            conn1.statement.executeUpdate(q);
+            new SignUp2(formno);
+            dispose();
+
 
         }catch (Exception E){
             E.printStackTrace();
+            JOptionPane.showMessageDialog(null,"Something went wrong. Please try again.");
+
         }
     }
 

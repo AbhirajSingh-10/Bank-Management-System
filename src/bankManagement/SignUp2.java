@@ -29,7 +29,7 @@ public class SignUp2 extends JFrame implements ActionListener {
         l1.setBounds(300,30,600,40);
         add(l1);
 
-        JLabel l2 = new JLabel("Additonal Details");
+        JLabel l2 = new JLabel("Additional Details");
         l2.setFont(new Font("Raleway", Font.BOLD,22));
         l2.setBounds(300,60,600,40);
         add(l2);
@@ -63,7 +63,7 @@ public class SignUp2 extends JFrame implements ActionListener {
         l5.setBounds(100,220,100,30);
         add(l5);
 
-        String income [] = {"Null","<1,50,000","<2,50,000", "5,00,000", "Uptp 10,00,000","Above 10,00,000"};
+        String income [] = {"Null","<1,50,000","<2,50,000", "5,00,000", "Upto 10,00,000","Above 10,00,000"};
         comboBox3 = new JComboBox(income);
         comboBox3.setBackground(new Color(252,208,76));
         comboBox3.setFont(new Font("Raleway",Font.BOLD,14));
@@ -75,7 +75,7 @@ public class SignUp2 extends JFrame implements ActionListener {
         l6.setBounds(100,270,150,30);
         add(l6);
 
-        String educational [] = {"Non-Graduate","Graduate","Post-Graduate", "Doctrate", "Others"};
+        String educational [] = {"Non-Graduate","Graduate","Post-Graduate", "Doctorate", "Others"};
         comboBox4 = new JComboBox(educational);
         comboBox4.setBackground(new Color(252,208,76));
         comboBox4.setFont(new Font("Raleway",Font.BOLD,14));
@@ -105,7 +105,7 @@ public class SignUp2 extends JFrame implements ActionListener {
         textPan.setBounds(350,390,320,30);
         add(textPan);
 
-        JLabel l9 = new JLabel("Aadhar Number : ");
+        JLabel l9 = new JLabel("Aadhaar Number : ");
         l9.setFont(new Font("Raleway", Font.BOLD,18));
         l9.setBounds(100,440,180,30);
         add(l9);
@@ -172,6 +172,7 @@ public class SignUp2 extends JFrame implements ActionListener {
         next.setForeground(Color.BLACK);
         next.setBounds(570,640,100,30);
         next.addActionListener(this);
+        getRootPane().setDefaultButton(next);
         add(next);
 
 
@@ -190,8 +191,8 @@ public class SignUp2 extends JFrame implements ActionListener {
         String edu = (String) comboBox4.getSelectedItem();
         String occ = (String) comboBox5.getSelectedItem();
 
-        String pan = textPan.getText();
-        String aadhar = textAadhar.getText();
+        String pan = textPan.getText().trim();
+        String aadhar = textAadhar.getText().trim();
 
         String scitizen = " ";
         if(r1.isSelected()){
@@ -202,15 +203,44 @@ public class SignUp2 extends JFrame implements ActionListener {
 
         String eaccount = " ";
         if(e1.isSelected()){
-            scitizen= "Yes";
+            eaccount= "Yes";
         }else if(e2.isSelected()){
-            scitizen = "No";
+            eaccount = "No";
+        }
+
+        if(pan.isEmpty() || aadhar.isEmpty()){
+            JOptionPane.showMessageDialog(null,"Fill all fields");
+        }else
+
+        if(!pan.matches("[A-Z]{5}[0-9]{4}[A-Z]{1}")){
+
+            JOptionPane.showMessageDialog(
+                    null,
+                    "Invalid PAN Number");
+
+            return;
+        }
+
+        if(!aadhar.matches("\\d{12}")){
+
+            JOptionPane.showMessageDialog(
+                    null,
+                    "Invalid Aadhaar Number");
+
+            return;
+        }
+
+        if(scitizen.isBlank() || eaccount.isBlank()){
+
+            JOptionPane.showMessageDialog(
+                    null,
+                    "Please select all options");
+
+            return;
         }
 
         try{
-            if(textPan.getText().isEmpty() || textAadhar.getText().isEmpty()){
-                JOptionPane.showMessageDialog(null,"Fill all fields");
-            }else {
+
                 Conn c1 = new Conn();
                 String q = "INSERT INTO signuptwo VALUES('"
                         + formno + "', '"
@@ -226,9 +256,10 @@ public class SignUp2 extends JFrame implements ActionListener {
                 c1.statement.executeUpdate(q);
                 new SignUp3(formno);
                 dispose();
-            }
+
         } catch (Exception ex) {
             ex.printStackTrace();
+            JOptionPane.showMessageDialog(null,"Something went wrong. Please try again.");
         }
 
     }

@@ -1,18 +1,18 @@
 package bankManagement;
 
-import javax.print.attribute.standard.JobHoldUntil;
+
 import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.rmi.server.ExportException;
+
 import java.util.Random;
 
 
 public class SignUp3 extends JFrame implements ActionListener {
     JRadioButton r1,r2,r3,r4;
 
-    JCheckBox c1,c2,c3,c4,c5,c6;
+    JCheckBox c1,c2,c3,c4,c5,c6,c7;
 
     JButton c,s;
 
@@ -148,7 +148,7 @@ public class SignUp3 extends JFrame implements ActionListener {
         c6.setBounds(350,600,200,30);
         add(c6);
 
-        JCheckBox c7 = new JCheckBox("I here by decleares that the above entered details correct to the best of my knlowledge.",true);
+        c7 = new JCheckBox("I here by declares that the above entered details correct to the best of my knowledge.",true);
         c7.setBackground(new Color(215,252,252));
         c7.setFont(new Font("Raleway",Font.BOLD,12));
         c7.setBounds(100,680,600,20);
@@ -170,6 +170,7 @@ public class SignUp3 extends JFrame implements ActionListener {
         s.setForeground(Color.WHITE);
         s.setBounds(250,720,100,30);
         s.addActionListener(this);
+        getRootPane().setDefaultButton(s);
         add(s);
 
         c = new JButton("Cancel");
@@ -220,21 +221,31 @@ public class SignUp3 extends JFrame implements ActionListener {
         String fac = "";
         if(c1.isSelected()){
             fac = fac+"ATM CARD ";
-        } else if (c2.isSelected()) {
+        }
+        if (c2.isSelected()) {
             fac = fac+"Internet Banking";
-        } else if (c3.isSelected()) {
+        }
+        if (c3.isSelected()) {
             fac = fac+"Mobile Banking";
-        } else if (c4.isSelected()) {
+        }
+        if (c4.isSelected()) {
             fac = fac+"EMAIL Alerts";
-        } else if (c5.isSelected()) {
+        }
+        if (c5.isSelected()) {
             fac=fac+"Cheque Book";
-        } else if (c6.isSelected()) {
+        }
+        if (c6.isSelected()) {
             fac=fac+"E-Statement";
+        }
+
+        if(!c7.isSelected()){
+            JOptionPane.showMessageDialog(null,"Please accept declaration");
+            return;
         }
 
         try {
             if (e.getSource()==s){
-                if (atype.isEmpty()){
+                if (atype==null){
                     JOptionPane.showMessageDialog(null,"Fill all the fields");
                 }else {
                     Conn c1 = new Conn();
@@ -252,6 +263,7 @@ public class SignUp3 extends JFrame implements ActionListener {
 
         }catch (Exception E){
             E.printStackTrace();
+            JOptionPane.showMessageDialog(null,"Something went wrong. Please try again");
         }
     }
 }
