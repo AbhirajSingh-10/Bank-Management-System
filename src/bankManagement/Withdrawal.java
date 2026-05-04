@@ -59,38 +59,78 @@ public class Withdrawal extends JFrame implements ActionListener {
         setSize(1550,1080);
         setLocation(0,0);
         setVisible(true);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource()==b1){
             try{
-                String amount = textField.getText();
+                String amountText = textField.getText().trim();
                 Date date = new Date();
-                if(textField.getText().isEmpty()){
+                if(amountText.isEmpty()){
                     JOptionPane.showMessageDialog(null,"Please enter amount you want to withdraw");
-                    Conn c = new Conn();
-                    ResultSet resultSet = c.statement.executeQuery("select * from bank where pin ='"+pin+"'");
-                    int balance = 0;
-                    while(resultSet.next()){
-                        if(resultSet.getString("type").equals("Deposit")){
-                            balance += Integer.parseInt(resultSet.getString("amount"));
-                        }else{
-                            balance -= Integer.parseInt(resultSet.getString("amount"));
-                        }
-                    }
-
-                    if (balance < Integer.parseInt(amount)) {
-                        JOptionPane.showMessageDialog(null, "Insuffient Balance");
-                        return;
-                    }
-
-                    c.statement.executeUpdate("insert into bank values('" + pin + "', '" + date + "', 'Withdrawl', '" + amount + "' )");
-                    JOptionPane.showMessageDialog(null, "Rs. " + amount + " Debited Successfully");
-                    dispose();
-                    new MainClass(pin);
-
+                    return;
                 }
+
+                int amount;
+
+                try {
+
+                    amount = Integer.parseInt(amountText);
+
+                } catch (NumberFormatException ex) {
+
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "Please enter valid numeric amount"
+                    );
+
+                    return;
+                }
+
+                if (amount <= 0) {
+
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "Amount must be greater than 0"
+                    );
+
+                    return;
+                }
+
+                if (amount > 10000) {
+
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "Maximum withdrawal limit is Rs. 10,000"
+                    );
+
+                    return;
+                }
+
+                Conn c = new Conn();
+                ResultSet resultSet = c.statement.executeQuery("select * from bank where pin ='"+pin+"'");
+                int balance = 0;
+                while(resultSet.next()){
+                    if(resultSet.getString("type").equals("Deposit")){
+                        balance += Integer.parseInt(resultSet.getString("amount"));
+                    }else{
+                        balance -= Integer.parseInt(resultSet.getString("amount"));
+                    }
+                }
+
+                if (balance < amount) {
+                    JOptionPane.showMessageDialog(null, "Insufficient Balance");
+                    return;
+                }
+
+                c.statement.executeUpdate("insert into bank values('" + pin + "', '" + date + "', 'Withdrawal', '" + amount + "' )");
+                JOptionPane.showMessageDialog(null, "Rs. " + amount + " Debited Successfully");
+                dispose();
+                new MainClass(pin);
+
+
             } catch (Exception E) {
                     E.printStackTrace();
             }

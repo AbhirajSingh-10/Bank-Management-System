@@ -55,6 +55,7 @@ public class Deposit extends JFrame implements ActionListener {
         setSize(1550,1080);
         setLocation(0,0);
         setVisible(true);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
     }
 
@@ -70,11 +71,11 @@ public class Deposit extends JFrame implements ActionListener {
                     Conn c = new Conn();
                     c.statement.executeUpdate("insert into bank values('" + pin + "', '" + date + "','Deposit', '" + amount + "')");
                     JOptionPane.showMessageDialog(null, "Rs. " + amount + " Deposited Successfully");
-                    setVisible(false);
+                    dispose();
                     new MainClass(pin);
                 }
             } else if (e.getSource() == b2) {
-                setVisible(false);
+                dispose();
                 new MainClass(pin);
             }
         } catch (Exception E) {

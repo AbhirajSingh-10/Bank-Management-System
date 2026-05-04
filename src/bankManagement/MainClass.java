@@ -78,27 +78,28 @@ public class MainClass extends JFrame implements ActionListener {
         setSize(1550,1080);
         setLocation(0,0);
         setVisible(true);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource()==b1){
             new Deposit(pin);
-            setVisible(false);
+            dispose();
         }else if (e.getSource()==b7){
             System.exit(0);
         } else if (e.getSource()==b2) {
             new Withdrawal(pin);
-            setVisible(false);
+            dispose();
         } else if (e.getSource()==b6) {
             new BalanceEnquiry(pin);
-            setVisible(false);
+            dispose();
         } else if (e.getSource()==b3) {
             new FastCash(pin);
-            setVisible(false);
+            dispose();
         } else if (e.getSource()==b5) {
             new Pin(pin);
-            setVisible(false);
+            dispose();
         } else if (e.getSource()==b4) {
             new Mini(pin);
         }

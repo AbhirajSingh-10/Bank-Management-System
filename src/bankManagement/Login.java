@@ -95,6 +95,7 @@ public class Login extends JFrame implements ActionListener {
         setSize(850,480);
         setLocation(400,200);
         setVisible(true);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
     @Override
@@ -105,10 +106,10 @@ public class Login extends JFrame implements ActionListener {
                 String card_no = textField.getText();
                 String pin = new String(passwordField.getPassword());
 
-                String q = "select * from login where cardno = '"+card_no+"' and pin = '"+pin+"'";
+                String q = "select * from login where card_no = '"+card_no+"' and pin = '"+pin+"'";
                 ResultSet resultSet = c.statement.executeQuery(q);
                 if(resultSet.next()){
-                    setVisible(false);
+                    dispose();
                     new MainClass(pin);
                 }else{
                     JOptionPane.showMessageDialog(null,"Incorrect Card Number Or Pin");
@@ -118,7 +119,7 @@ public class Login extends JFrame implements ActionListener {
                 passwordField.setText("");
             }else if(e.getSource()==button3){
                 new SignUp();
-                setVisible(false);
+                dispose();
             }
         }catch (Exception exp){
             exp.printStackTrace();

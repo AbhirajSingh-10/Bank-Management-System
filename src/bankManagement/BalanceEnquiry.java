@@ -63,11 +63,12 @@ public class BalanceEnquiry extends JFrame implements ActionListener {
         setSize(1550,1080);
         setLocation(0,0);
         setVisible(true);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        setVisible(false);
+        dispose();
         new MainClass(pin);
     }
 

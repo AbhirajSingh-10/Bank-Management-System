@@ -180,6 +180,7 @@ public class SignUp2 extends JFrame implements ActionListener {
         setLocation(450,80);
         getContentPane().setBackground(new Color(252, 208, 76));
         setVisible(true);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
     @Override
     public void actionPerformed(ActionEvent e) {
@@ -224,7 +225,7 @@ public class SignUp2 extends JFrame implements ActionListener {
                         + eaccount + "')";
                 c1.statement.executeUpdate(q);
                 new SignUp3(formno);
-                setVisible(false);
+                dispose();
             }
         } catch (Exception ex) {
             ex.printStackTrace();

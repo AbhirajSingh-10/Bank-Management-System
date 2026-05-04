@@ -32,7 +32,7 @@ public class Mini extends JFrame implements ActionListener {
         try{
             Conn c = new Conn();
 
-            ResultSet resultSet = c.statement.executeQuery("select * from login where pin ="+pin+"'");
+            ResultSet resultSet = c.statement.executeQuery("select * from login where pin = '"+pin+"'");
 
             while(resultSet.next()){
                 label3.setText("Card Number:  "+ resultSet.getString("card_no").substring(0,4) + "XXXXXXXX"+ resultSet.getString("card_no").substring(12));
@@ -47,7 +47,7 @@ public class Mini extends JFrame implements ActionListener {
             ResultSet resultSet = c.statement.executeQuery("select * from bank where pin = '"+pin+"'");
 
             while (resultSet.next()){
-                label1.setText(label1.getText() + "<html>"+resultSet.getString("date")+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+resultSet.getString("type")+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+resultSet.getString("amount")+ "<br><br><html>");
+                label1.setText(label1.getText() + "<html>"+resultSet.getString("date")+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+resultSet.getString("type")+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+resultSet.getString("amount")+ "<br><br></html>");
                 if (resultSet.getString("type").equals("Deposit")){
                     balance += Integer.parseInt(resultSet.getString("amount"));
                 }else {
@@ -74,6 +74,7 @@ public class Mini extends JFrame implements ActionListener {
         setLocation(20,20);
         setLayout(null);
         setVisible(true);
+        setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
     }
     @Override
     public void actionPerformed(ActionEvent e) {

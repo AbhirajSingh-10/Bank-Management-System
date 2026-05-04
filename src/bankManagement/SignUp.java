@@ -193,6 +193,7 @@ public class SignUp extends JFrame implements ActionListener {
         setSize(850,800);
         setLocation(360,40);
         setVisible(true);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
 
@@ -232,7 +233,7 @@ public class SignUp extends JFrame implements ActionListener {
                 String q = "insert into signup values('"+formno+"', '"+name+"', '"+fname+"', '"+dob+"', '"+gender+"', '"+email+"', '"+marital+"', '"+address+"', '"+city+"', '"+pincode+"', '"+state+"' )";
                 conn1.statement.executeUpdate(q);
                 new SignUp2(formno);
-                setVisible(false);
+                dispose();
             }
 
         }catch (Exception E){

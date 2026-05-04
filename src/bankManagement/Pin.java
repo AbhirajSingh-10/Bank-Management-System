@@ -74,6 +74,7 @@ public class Pin extends JFrame implements ActionListener {
         setLayout(null);
         setLocation(0,0);
         setVisible(true);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     }
 
     @Override
@@ -108,12 +109,12 @@ public class Pin extends JFrame implements ActionListener {
                 c.statement.executeUpdate(q3);
 
                 JOptionPane.showMessageDialog(null,"PIN changed successfully");
-                setVisible(false);
+                dispose();
                 new MainClass(pin);
 
             } else if (e.getSource()==b2) {
                 new MainClass(pin);
-                setVisible(false);
+                dispose();
             }
 
 

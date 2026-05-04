@@ -185,6 +185,7 @@ public class SignUp3 extends JFrame implements ActionListener {
         setLayout(null);
         setLocation(400,20);
         setVisible(true);
+        setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
 
 
@@ -243,7 +244,7 @@ public class SignUp3 extends JFrame implements ActionListener {
                     c1.statement.executeUpdate(q2);
                     JOptionPane.showMessageDialog(null,"Card Number : "+cardno+"\n Pin : "+pin );
                     new Deposit(pin);
-                    setVisible(false);
+                    dispose();
                 }
             } else if (e.getSource()==c) {
                 System.exit(0);
