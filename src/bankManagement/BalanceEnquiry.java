@@ -1,6 +1,5 @@
 package bankManagement;
 
-import com.sun.tools.javac.Main;
 
 import javax.swing.*;
 import java.awt.*;

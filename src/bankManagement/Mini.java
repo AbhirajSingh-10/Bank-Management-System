@@ -13,8 +13,10 @@ public class Mini extends JFrame implements ActionListener {
         this.pin = pin;
 
         JLabel label1 = new JLabel();
-        label1.setBounds(20,140,400,200);
-        add(label1);
+        JScrollPane scrollPane = new JScrollPane(label1);
+        scrollPane.setBounds(20,140,350,220);
+        scrollPane.setBackground(new Color(255,204,204));
+        add(scrollPane);
 
         JLabel label2 = new JLabel("Mini Statement");
         label2.setBounds(150,20,200,20);
@@ -32,7 +34,7 @@ public class Mini extends JFrame implements ActionListener {
         try{
             Conn c = new Conn();
 
-            ResultSet resultSet = c.statement.executeQuery("select * from login where pin = '"+pin+"'");
+            ResultSet resultSet = c.statement.executeQuery("select * from bank where pin = '"+pin+"' order by date desc limit 10");
 
             while(resultSet.next()){
                 label3.setText("Card Number:  "+ resultSet.getString("card_no").substring(0,4) + "XXXXXXXX"+ resultSet.getString("card_no").substring(12));
