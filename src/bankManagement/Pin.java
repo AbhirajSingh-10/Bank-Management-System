@@ -4,13 +4,14 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.*;
 
 public class Pin extends JFrame implements ActionListener {
     JButton b1,b2;
     JPasswordField p1,p2;
-    String cardNumber;
-    Pin(String cardNumber){
-        this.cardNumber = cardNumber;
+    int accountId;
+    Pin(int accountId){
+        this.accountId = accountId;
 
         ImageIcon i1 = new ImageIcon(ClassLoader.getSystemResource("icons/atm2.png"));
         Image i2 = i1.getImage().getScaledInstance(1550,830,Image.SCALE_DEFAULT);
@@ -82,58 +83,84 @@ public class Pin extends JFrame implements ActionListener {
 
         try{
 
-            String pin1 = p1.getText();
-            String pin2 = p2.getText();
+            String pin1 = new String(p1.getPassword()).trim();
+            String pin2 = new String(p2.getPassword()).trim();
 
-            if(!pin1.matches("\\d{4}")){
 
-                JOptionPane.showMessageDialog(
-                        null,
-                        "PIN must be exactly 4 digits"
-                );
-
-                return;
-            }
-
-            if (!pin1.equals(pin2)){
-                JOptionPane.showMessageDialog(null,"Entered PIN does not match");
-                return;
-            }
             if (e.getSource()==b1){
-                if (p1.getText().equals("")){
+                if (pin1.isEmpty()){
                     JOptionPane.showMessageDialog(null,"Enter New PIN");
                     return;
                 }
-                if (p2.getText().equals("")){
+                if (pin2.isEmpty()){
                     JOptionPane.showMessageDialog(null,"Re-Enter New PIN");
+                    return;
+                }
+                if(!pin1.matches("\\d{4}")){
+
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "PIN must be exactly 4 digits"
+                    );
+
+                    return;
+                }
+                if (!pin1.equals(pin2)){
+                    JOptionPane.showMessageDialog(null,"Entered PIN does not match");
                     return;
                 }
 
                 Conn c = new Conn();
 
-                String q1 = "update login set pin = '"+pin1+"' where card_no = '"+cardNumber+"'";
-                String q2 = "update signupthree set pin = '"+pin1+"' where card_no = '"+cardNumber+"'";
+                String query = """
+                    UPDATE accounts
+                    SET pin = ?
+                    WHERE account_id = ?
+                    """;
 
-                c.statement.executeUpdate(q1);
-                c.statement.executeUpdate(q2);
+                PreparedStatement ps =
+                        c.connection.prepareStatement(query);
 
-                JOptionPane.showMessageDialog(null,"PIN changed successfully");
+                ps.setString(1, pin1);
+                ps.setInt(2, accountId);
+
+                int rowsUpdated =
+                        ps.executeUpdate();
+
+                if(rowsUpdated > 0){
+
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "PIN changed successfully"
+                    );
+
+                }else{
+
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "Account not found"
+                    );
+
+                    return;
+                }
+
                 dispose();
-                new MainClass(cardNumber);
+                new MainClass(accountId);
 
             } else if (e.getSource()==b2) {
-                new MainClass(cardNumber);
+                new MainClass(accountId);
                 dispose();
             }
 
 
         }catch (Exception E){
             E.printStackTrace();
+            JOptionPane.showMessageDialog(null,"Something went wrong");
         }
 
     }
 
     public static void main(String[] args) {
-        new Pin("");
+        new Pin(0);
     }
 }

@@ -202,10 +202,16 @@ public class SignUp extends JFrame implements ActionListener {
 
     @Override
     public void actionPerformed(ActionEvent e) {
-        String formno = first;
         String name = textName.getText().trim();
         String fname = textFname.getText().trim();
-        String dob = ((JTextField) dateChooser.getDateEditor().getUiComponent()).getText().trim();
+
+        java.util.Date utilDate = dateChooser.getDate();
+        java.sql.Date dob = null;
+
+        if(utilDate != null){
+            dob = new java.sql.Date(utilDate.getTime());
+        }
+
         String gender = null;
         if(r1.isSelected()){
             gender = "Male";
@@ -231,7 +237,7 @@ public class SignUp extends JFrame implements ActionListener {
         try{
             if(name.isEmpty() ||
                     fname.isEmpty() ||
-                    dob.isEmpty() ||
+                    dob == null ||
                     gender == null ||
                     marital == null ||
                     address.isEmpty() ||
@@ -286,12 +292,12 @@ public class SignUp extends JFrame implements ActionListener {
             PreparedStatement ps =
                     conn.connection.prepareStatement(
                             query,
-                            PreparedStatement.RETURN_GENERATED_KEYS
+                            Statement.RETURN_GENERATED_KEYS
                     );
 
             ps.setString(1, name);
             ps.setString(2, fname);
-            ps.setString(3, dob);
+            ps.setDate(3, dob);
             ps.setString(4, gender);
             ps.setString(5, email);
             ps.setString(6, marital);

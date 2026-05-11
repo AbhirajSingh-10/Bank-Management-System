@@ -5,15 +5,15 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.ResultSet;
+import java.sql.*;
 
 public class BalanceEnquiry extends JFrame implements ActionListener {
 
-    String cardNumber;
+    int accountId;
     JLabel label2;
     JButton b1;
-    BalanceEnquiry(String cardNumber){
-        this.cardNumber = cardNumber;
+    BalanceEnquiry(int accountId){
+        this.accountId = accountId;
 
         ImageIcon i1 = new ImageIcon(ClassLoader.getSystemResource("icons/atm2.png"));
         Image i2 = i1.getImage().getScaledInstance(1550,830,Image.SCALE_DEFAULT);
@@ -41,23 +41,37 @@ public class BalanceEnquiry extends JFrame implements ActionListener {
         b1.addActionListener(this);
         l3.add(b1);
 
-        int balance =0;
         try{
-            Conn c = new Conn();
-            ResultSet resultSet = c.statement.executeQuery("select * from bank_transactions where card_number = '"+cardNumber+"'");
-            while (resultSet.next()){
-                if (resultSet.getString("transaction_type").equals("Deposit")){
-                    balance += Integer.parseInt(resultSet.getString("amount"));
-                }else {
-                    balance -= Integer.parseInt(resultSet.getString("amount"));
-                }
+            Conn conn = new Conn();
+
+            String query = """
+                SELECT balance
+                FROM accounts
+                WHERE account_id = ?
+                """;
+
+            PreparedStatement ps =
+                    conn.connection.prepareStatement(query);
+
+            ps.setInt(1, accountId);
+
+            ResultSet rs = ps.executeQuery();
+
+            if(rs.next()){
+
+                double balance = rs.getDouble("balance");
+
+                label2.setText("Rs. " + balance);
+
+            }else{
+
+                label2.setText("Account not found");
             }
+
         }catch (Exception e){
             e.printStackTrace();
             JOptionPane.showMessageDialog(null,"Something went wrong. Try again");
         }
-
-        label2.setText(""+balance);
 
         setLayout(null);
         setSize(1550,1080);
@@ -69,10 +83,10 @@ public class BalanceEnquiry extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         dispose();
-        new MainClass(cardNumber);
+        new MainClass(accountId);
     }
 
     public static void main(String[] args) {
-        new BalanceEnquiry("");
+        new BalanceEnquiry(0);
     }
 }

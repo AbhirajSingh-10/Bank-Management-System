@@ -4,14 +4,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.ResultSet;
-import java.util.Date;
+import java.sql.*;
 
 public class FastCash extends JFrame implements ActionListener {
     JButton b1,b2,b3,b4,b5,b6,b7;
-    String cardNumber;
-    FastCash(String cardNumber){
-        this.cardNumber = cardNumber;
+    int accountId;
+    FastCash(int accountId){
+        this.accountId = accountId;
 
         ImageIcon i1 = new ImageIcon(ClassLoader.getSystemResource("icons/atm2.png"));
         Image i2 = i1.getImage().getScaledInstance(1550,830,Image.SCALE_DEFAULT);
@@ -83,46 +82,104 @@ public class FastCash extends JFrame implements ActionListener {
     }
 
     public static void main(String[] args) {
-        new FastCash("");
+        new FastCash(0);
     }
 
     @Override
     public void actionPerformed(ActionEvent e) {
         if(e.getSource()==b7){
             dispose();
-            new MainClass(cardNumber);
+            new MainClass(accountId);
         }else{
             String amount = ((JButton)e.getSource()).getText().substring(4);
-            Conn c = new Conn();
-            Date date = new Date();
 
             try{
-                ResultSet resultSet = c.statement.executeQuery(
-                        "select * from bank_transactions where card_number = '"+cardNumber+"'"
-                );
-                int balance =0;
-                while (resultSet.next()){
-                    if (resultSet.getString("transaction_type").equals("Deposit")){
-                        balance += Integer.parseInt(resultSet.getString("amount"));
-                    }else {
-                        balance -= Integer.parseInt(resultSet.getString("amount"));
-                    }
+                double withdrawAmount = Double.parseDouble(amount);
+
+                Conn conn = new Conn();
+
+                String balanceQuery = """
+                    SELECT balance
+                    FROM accounts
+                    WHERE account_id = ?
+                    """;
+
+                PreparedStatement balancePs =
+                        conn.connection.prepareStatement(
+                                balanceQuery
+                        );
+
+                balancePs.setInt(1, accountId);
+
+                ResultSet rs =
+                        balancePs.executeQuery();
+
+                double currentBalance = 0;
+
+                if(rs.next()){
+
+                    currentBalance =
+                            rs.getDouble("balance");
                 }
 
-                if (e.getSource() != b7 && balance < Integer.parseInt(amount)){
-                    JOptionPane.showMessageDialog(null, "Insuffient Balance");
+                if(currentBalance < withdrawAmount){
+
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "Insufficient Balance"
+                    );
+
                     return;
                 }
 
-                c.statement.executeUpdate(
-                        "insert into bank_transactions(card_number, transaction_type, amount) values('"
-                                + cardNumber + "', 'Withdrawal', '" + amount + "')"
-                );
+                String transactionQuery = """
+                    INSERT INTO transactions
+                    (
+                        account_id,
+                        transaction_type,
+                        amount
+                    )
+                    VALUES (?, ?, ?)
+                    """;
+
+                PreparedStatement transactionPs =
+                        conn.connection.prepareStatement(
+                                transactionQuery
+                        );
+
+                transactionPs.setInt(1, accountId);
+                transactionPs.setString(2, "WITHDRAWAL");
+                transactionPs.setDouble(3, withdrawAmount);
+
+                transactionPs.executeUpdate();
+
+                String updateBalanceQuery = """
+                    UPDATE accounts
+                    SET balance = balance - ?
+                    WHERE account_id = ?
+                    """;
+
+                PreparedStatement updatePs =
+                        conn.connection.prepareStatement(
+                                updateBalanceQuery
+                        );
+
+                updatePs.setDouble(1, withdrawAmount);
+                updatePs.setInt(2, accountId);
+
+                updatePs.executeUpdate();
+
+
                 JOptionPane.showMessageDialog(null, "Rs. "+amount+" Debited Successfully");
+
                 dispose();
-                new MainClass(cardNumber);
+                new MainClass(accountId);
             } catch (Exception ex) {
                 ex.printStackTrace();
+                JOptionPane.showMessageDialog(
+                        null,
+                        "Something went wrong"
+                );
             }
         }
     }

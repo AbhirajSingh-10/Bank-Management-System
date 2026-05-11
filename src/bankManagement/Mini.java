@@ -4,13 +4,13 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.ResultSet;
+import java.sql.*;
 
 public class Mini extends JFrame implements ActionListener {
-    String cardNumber;
+    int accountId;
     JButton button;
-    Mini(String cardNumber){
-        this.cardNumber = cardNumber;
+    Mini(int accountId){
+        this.accountId = accountId;
 
         JLabel label1 = new JLabel();
         JScrollPane scrollPane = new JScrollPane(label1);
@@ -32,40 +32,119 @@ public class Mini extends JFrame implements ActionListener {
         add(label4);
 
         try{
-            Conn c = new Conn();
+            Conn conn = new Conn();
 
-            ResultSet resultSet = c.statement.executeQuery("select * from bank_transactions where card_number = '"+cardNumber+"' order by transaction_time desc limit 10");
+            String cardQuery = """
+                SELECT card_number
+                FROM accounts
+                WHERE account_id = ?
+                """;
 
-            while(resultSet.next()){
+            PreparedStatement cardPs =
+                    conn.connection.prepareStatement(
+                            cardQuery
+                    );
+
+            cardPs.setInt(1, accountId);
+
+            ResultSet cardRs = cardPs.executeQuery();
+
+            if(cardRs.next()){
+
+                String cardNumber =
+                        String.valueOf(
+                                cardRs.getLong("card_number")
+                        );
+
                 label3.setText(
-                        "Card Number:  " +
-                                cardNumber.substring(0,4) +
-                                "XXXXXXXX" +
-                                cardNumber.substring(12)
+                        "Card Number: "
+                                + cardNumber.substring(0,4)
+                                + "XXXXXXXX"
+                                + cardNumber.substring(12)
                 );
             }
+
         }catch (Exception e){
             e.printStackTrace();
+            JOptionPane.showMessageDialog(null,"Something went wrong. Try again.");
         }
 
         try{
-            int balance = 0;
-            Conn c = new Conn();
-            ResultSet resultSet = c.statement.executeQuery("select * from bank_transactions where card_number = '"+cardNumber+"'");
 
-            while (resultSet.next()){
-                label1.setText(label1.getText() + "<html>"+resultSet.getString("transaction_time")+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+resultSet.getString("type")+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+resultSet.getString("amount")+ "<br><br></html>");
-                if (resultSet.getString("transaction_type").equals("Deposit")){
-                    balance += Integer.parseInt(resultSet.getString("amount"));
-                }else {
-                    balance -= Integer.parseInt(resultSet.getString("amount"));
-                }
+            Conn conn = new Conn();
+
+            String transactionQuery = """
+                SELECT
+                    transaction_type,
+                    amount,
+                    transaction_time
+                FROM transactions
+                WHERE account_id = ?
+                ORDER BY transaction_time DESC
+                LIMIT 10
+                """;
+
+            PreparedStatement transactionPs =
+                    conn.connection.prepareStatement(
+                            transactionQuery
+                    );
+
+            transactionPs.setInt(1, accountId);
+
+            ResultSet rs =
+                    transactionPs.executeQuery();
+
+            StringBuilder miniStatement =
+                    new StringBuilder("<html>");
+
+            while(rs.next()){
+
+                miniStatement.append(
+                                rs.getTimestamp("transaction_time")
+                        )
+                        .append("&nbsp;&nbsp;&nbsp;")
+                        .append(rs.getString("transaction_type"))
+                        .append("&nbsp;&nbsp;&nbsp;Rs. ")
+                        .append(rs.getDouble("amount"))
+                        .append("<br><br>");
             }
 
-            label4.setText("Your Total Balance is Rs "+balance);
+            miniStatement.append("</html>");
+
+            label1.setText(
+                    miniStatement.toString()
+            );
+
+            String balanceQuery = """
+                SELECT balance
+                FROM accounts
+                WHERE account_id = ?
+                """;
+
+            PreparedStatement balancePs =
+                    conn.connection.prepareStatement(
+                            balanceQuery
+                    );
+
+            balancePs.setInt(1, accountId);
+
+            ResultSet balanceRs =
+                    balancePs.executeQuery();
+
+            if(balanceRs.next()){
+
+                double balance =
+                        balanceRs.getDouble("balance");
+
+                label4.setText(
+                        "Your Total Balance is Rs "
+                                + balance
+                );
+            }
 
         }catch (Exception e){
             e.printStackTrace();
+            JOptionPane.showMessageDialog(null, "Something went wrong. Please try again.");
         }
 
         button = new JButton("Exit");
@@ -90,6 +169,6 @@ public class Mini extends JFrame implements ActionListener {
     }
 
     public static void main(String[] args) {
-        new Mini("");
+        new Mini(0);
     }
 }

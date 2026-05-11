@@ -315,7 +315,7 @@ public class SignUp3 extends JFrame implements ActionListener {
                                     "\nPIN : " + pin
                     );
 
-                    new Deposit(String.valueOf(cardNumber));
+                    new Deposit(accountId);
 
                     dispose();
                 }

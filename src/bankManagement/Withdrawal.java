@@ -4,16 +4,16 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.ResultSet;
-import java.util.Date;
+import java.sql.*;
+
 
 public class Withdrawal extends JFrame implements ActionListener {
-    String cardNumber;
+    int accountId;
 
     TextField textField;
     JButton b1,b2;
-    public Withdrawal(String cardNumber) {
-        this.cardNumber = cardNumber;
+    public Withdrawal(int accountId) {
+        this.accountId = accountId;
         ImageIcon i1 = new ImageIcon(ClassLoader.getSystemResource("icons/atm2.png"));
         Image i2 = i1.getImage().getScaledInstance(1550,830,Image.SCALE_DEFAULT);
         ImageIcon i3 = new ImageIcon(i2);
@@ -67,17 +67,17 @@ public class Withdrawal extends JFrame implements ActionListener {
         if(e.getSource()==b1){
             try{
                 String amountText = textField.getText().trim();
-                Date date = new Date();
+
                 if(amountText.isEmpty()){
                     JOptionPane.showMessageDialog(null,"Please enter amount you want to withdraw");
                     return;
                 }
 
-                int amount;
+                double amount;
 
                 try {
 
-                    amount = Integer.parseInt(amountText);
+                    amount = Double.parseDouble(amountText);
 
                 } catch (NumberFormatException ex) {
 
@@ -109,41 +109,97 @@ public class Withdrawal extends JFrame implements ActionListener {
                     return;
                 }
 
-                Conn c = new Conn();
-                ResultSet resultSet = c.statement.executeQuery("select * from bank_transactions where card_number ='"+cardNumber+"'");
-                int balance = 0;
-                while(resultSet.next()){
-                    if(resultSet.getString("transaction_type").equals("Deposit")){
-                        balance += Integer.parseInt(resultSet.getString("amount"));
-                    }else{
-                        balance -= Integer.parseInt(resultSet.getString("amount"));
-                    }
-                }
+                Conn conn = new Conn();
 
-                if (balance < amount) {
-                    JOptionPane.showMessageDialog(null, "Insufficient Balance");
+                String balanceQuery = """
+                    SELECT balance
+                    FROM accounts
+                    WHERE account_id = ?
+                    """;
+
+                PreparedStatement balancePs =
+                        conn.connection.prepareStatement(
+                                balanceQuery
+                        );
+
+                balancePs.setInt(1, accountId);
+
+                ResultSet rs =
+                        balancePs.executeQuery();
+
+                double currentBalance = 0;
+
+                if(rs.next()){
+
+                    currentBalance =
+                            rs.getDouble("balance");
+                }
+                if(currentBalance < amount){
+
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "Insufficient Balance"
+                    );
+
                     return;
                 }
 
-                c.statement.executeUpdate(
-                        "insert into bank_transactions(card_number, transaction_type, amount) values('"
-                                + cardNumber + "', 'Withdrawal', '" + amount + "')"
-                );
-                JOptionPane.showMessageDialog(null, "Rs. " + amount + " Debited Successfully");
+                String transactionQuery = """
+                    INSERT INTO transactions
+                    (
+                        account_id,
+                        transaction_type,
+                        amount
+                    )
+                    VALUES (?, ?, ?)
+                    """;
+
+                PreparedStatement transactionPs =
+                        conn.connection.prepareStatement(
+                                transactionQuery
+                        );
+
+                transactionPs.setInt(1, accountId);
+                transactionPs.setString(2, "WITHDRAWAL");
+                transactionPs.setDouble(3, amount);
+
+                transactionPs.executeUpdate();
+
+                String updateBalanceQuery = """
+                    UPDATE accounts
+                    SET balance = balance - ?
+                    WHERE account_id = ?
+                    """;
+
+                PreparedStatement updatePs =
+                        conn.connection.prepareStatement(
+                                updateBalanceQuery
+                        );
+
+                updatePs.setDouble(1, amount);
+                updatePs.setInt(2, accountId);
+
+                updatePs.executeUpdate();
+
+                JOptionPane.showMessageDialog(null, "Rs. " + amount + " Withdrawn Successfully");
+
                 dispose();
-                new MainClass(cardNumber);
+
+                new MainClass(accountId);
 
 
             } catch (Exception E) {
                     E.printStackTrace();
+
+                    JOptionPane.showMessageDialog(null, "Something went wrong");
             }
         } else if (e.getSource()==b2) {
             dispose();
-            new MainClass(cardNumber);
+            new MainClass(accountId);
         }
     }
 
     public static void main(String[] args) {
-        new Withdrawal("");
+        new Withdrawal(0);
     }
 }
