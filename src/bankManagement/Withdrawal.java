@@ -8,12 +8,12 @@ import java.sql.ResultSet;
 import java.util.Date;
 
 public class Withdrawal extends JFrame implements ActionListener {
-    String pin;
+    String cardNumber;
 
     TextField textField;
     JButton b1,b2;
-    public Withdrawal(String pin) {
-        this.pin=pin;
+    public Withdrawal(String cardNumber) {
+        this.cardNumber = cardNumber;
         ImageIcon i1 = new ImageIcon(ClassLoader.getSystemResource("icons/atm2.png"));
         Image i2 = i1.getImage().getScaledInstance(1550,830,Image.SCALE_DEFAULT);
         ImageIcon i3 = new ImageIcon(i2);
@@ -110,10 +110,10 @@ public class Withdrawal extends JFrame implements ActionListener {
                 }
 
                 Conn c = new Conn();
-                ResultSet resultSet = c.statement.executeQuery("select * from bank where pin ='"+pin+"'");
+                ResultSet resultSet = c.statement.executeQuery("select * from bank_transactions where card_number ='"+cardNumber+"'");
                 int balance = 0;
                 while(resultSet.next()){
-                    if(resultSet.getString("type").equals("Deposit")){
+                    if(resultSet.getString("transaction_type").equals("Deposit")){
                         balance += Integer.parseInt(resultSet.getString("amount"));
                     }else{
                         balance -= Integer.parseInt(resultSet.getString("amount"));
@@ -125,10 +125,13 @@ public class Withdrawal extends JFrame implements ActionListener {
                     return;
                 }
 
-                c.statement.executeUpdate("insert into bank values('" + pin + "', '" + date + "', 'Withdrawal', '" + amount + "' )");
+                c.statement.executeUpdate(
+                        "insert into bank_transactions(card_number, transaction_type, amount) values('"
+                                + cardNumber + "', 'Withdrawal', '" + amount + "')"
+                );
                 JOptionPane.showMessageDialog(null, "Rs. " + amount + " Debited Successfully");
                 dispose();
-                new MainClass(pin);
+                new MainClass(cardNumber);
 
 
             } catch (Exception E) {
@@ -136,7 +139,7 @@ public class Withdrawal extends JFrame implements ActionListener {
             }
         } else if (e.getSource()==b2) {
             dispose();
-            new MainClass(pin);
+            new MainClass(cardNumber);
         }
     }
 

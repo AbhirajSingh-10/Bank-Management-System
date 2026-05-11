@@ -7,10 +7,10 @@ import java.awt.event.ActionListener;
 
 public class MainClass extends JFrame implements ActionListener {
     JButton b1,b2,b3,b4,b5,b6,b7;
-    String pin;
+    int accountId;
 
-    MainClass(String pin){
-        this.pin = pin;
+    MainClass(int accountId){
+        this.accountId = accountId;
 
         ImageIcon i1 = new ImageIcon(ClassLoader.getSystemResource("icons/atm2.png"));
         Image i2 = i1.getImage().getScaledInstance(1550,830,Image.SCALE_DEFAULT);
@@ -84,28 +84,28 @@ public class MainClass extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         if (e.getSource()==b1){
-            new Deposit(pin);
+            new Deposit(accountId);
+            dispose();
+        }else if (e.getSource()==b2) {
+            new Withdrawal(accountId);
+            dispose();
+        } else if (e.getSource()==b3) {
+            new FastCash(accountId);
+            dispose();
+        } else if (e.getSource()==b4) {
+            new Mini(accountId);
+        } else if (e.getSource()==b5) {
+            new Pin(accountId);
+            dispose();
+        }  else if (e.getSource()==b6) {
+            new BalanceEnquiry(accountId);
             dispose();
         }else if (e.getSource()==b7){
             System.exit(0);
-        } else if (e.getSource()==b2) {
-            new Withdrawal(pin);
-            dispose();
-        } else if (e.getSource()==b6) {
-            new BalanceEnquiry(pin);
-            dispose();
-        } else if (e.getSource()==b3) {
-            new FastCash(pin);
-            dispose();
-        } else if (e.getSource()==b5) {
-            new Pin(pin);
-            dispose();
-        } else if (e.getSource()==b4) {
-            new Mini(pin);
         }
     }
 
     public static void main(String[] args) {
-        new MainClass("");
+        new MainClass(0);
     }
 }

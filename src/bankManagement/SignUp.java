@@ -6,6 +6,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.*;
 import java.util.Random;
 
 public class SignUp extends JFrame implements ActionListener {
@@ -38,37 +39,37 @@ public class SignUp extends JFrame implements ActionListener {
         add(label);
 
         JLabel label2 = new JLabel("Page 1");
-        label2.setFont(new Font("Ralway",Font.BOLD,22));
+        label2.setFont(new Font("Raleway",Font.BOLD,22));
         label2.setBounds(330,70,600,30);
         add(label2);
 
         JLabel label3 = new JLabel("Personal Details");
-        label3.setFont(new Font("Ralway", Font.BOLD, 22));
+        label3.setFont(new Font("Raleway", Font.BOLD, 22));
         label3.setBounds(290,90,600,30);
         add(label3);
 
         JLabel labelName = new JLabel("Name :");
-        labelName.setFont(new Font("Ralway",Font.BOLD,20));
+        labelName.setFont(new Font("Raleway",Font.BOLD,20));
         labelName.setBounds(100,190,100,30);
         add(labelName);
 
         textName = new JTextField();
-        textName.setFont(new Font("Ralway", Font.BOLD,14));
+        textName.setFont(new Font("Raleway", Font.BOLD,14));
         textName.setBounds(300,190,400,30);
         add(textName);
 
         JLabel labelFName = new JLabel("Father's Name :");
-        labelFName.setFont(new Font("Ralway",Font.BOLD,20));
+        labelFName.setFont(new Font("Raleway",Font.BOLD,20));
         labelFName.setBounds(100,240,200,30);
         add(labelFName);
 
         textFname = new JTextField();
-        textFname.setFont(new Font("Ralway", Font.BOLD,14));
+        textFname.setFont(new Font("Raleway", Font.BOLD,14));
         textFname.setBounds(300,240,400,30);
         add(textFname);
 
         JLabel dob = new JLabel("Date of Birth :");
-        dob.setFont(new Font("Ralway",Font.BOLD,20));
+        dob.setFont(new Font("Raleway",Font.BOLD,20));
         dob.setBounds(100,340,200,30);
         add(dob);
 
@@ -258,16 +259,59 @@ public class SignUp extends JFrame implements ActionListener {
 
                 JOptionPane.showMessageDialog(
                         null,
-                        "Invalid Pincode");
+                        "Invalid Pin code");
 
                 return;
             }
 
-            Conn conn1 = new Conn();
-            String q = "insert into signup values('"+formno+"', '"+name+"', '"+fname+"', '"+dob+"', '"+gender+"', '"+email+"', '"+marital+"', '"+address+"', '"+city+"', '"+pincode+"', '"+state+"' )";
-            conn1.statement.executeUpdate(q);
-            new SignUp2(formno);
-            dispose();
+            Conn conn = new Conn();
+
+            String query = """
+                INSERT INTO customers
+                (
+                    full_name,
+                    father_name,
+                    dob,
+                    gender,
+                    email,
+                    marital_status,
+                    address,
+                    city,
+                    pincode,
+                    state
+                )
+                VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+            """;
+
+            PreparedStatement ps =
+                    conn.connection.prepareStatement(
+                            query,
+                            PreparedStatement.RETURN_GENERATED_KEYS
+                    );
+
+            ps.setString(1, name);
+            ps.setString(2, fname);
+            ps.setString(3, dob);
+            ps.setString(4, gender);
+            ps.setString(5, email);
+            ps.setString(6, marital);
+            ps.setString(7, address);
+            ps.setString(8, city);
+            ps.setString(9, pincode);
+            ps.setString(10, state);
+
+            ps.executeUpdate();
+
+            ResultSet rs = ps.getGeneratedKeys();
+
+            if(rs.next()){
+
+                int customerId = rs.getInt(1);
+
+                new SignUp2(customerId);
+
+                dispose();
+            }
 
 
         }catch (Exception E){

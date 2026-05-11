@@ -8,9 +8,9 @@ import java.awt.event.ActionListener;
 public class Pin extends JFrame implements ActionListener {
     JButton b1,b2;
     JPasswordField p1,p2;
-    String pin;
-    Pin(String pin){
-        this.pin =pin;
+    String cardNumber;
+    Pin(String cardNumber){
+        this.cardNumber = cardNumber;
 
         ImageIcon i1 = new ImageIcon(ClassLoader.getSystemResource("icons/atm2.png"));
         Image i2 = i1.getImage().getScaledInstance(1550,830,Image.SCALE_DEFAULT);
@@ -85,6 +85,16 @@ public class Pin extends JFrame implements ActionListener {
             String pin1 = p1.getText();
             String pin2 = p2.getText();
 
+            if(!pin1.matches("\\d{4}")){
+
+                JOptionPane.showMessageDialog(
+                        null,
+                        "PIN must be exactly 4 digits"
+                );
+
+                return;
+            }
+
             if (!pin1.equals(pin2)){
                 JOptionPane.showMessageDialog(null,"Entered PIN does not match");
                 return;
@@ -100,20 +110,19 @@ public class Pin extends JFrame implements ActionListener {
                 }
 
                 Conn c = new Conn();
-                String q1 = "update bank set pin = '"+pin1+"' where pin = '"+pin+"'";
-                String q2 = "update login set pin = '"+pin1+"' where pin = '"+pin+"'";
-                String q3 = "update signupthree set pin = '"+pin1+"' where pin = '"+pin+"'";
+
+                String q1 = "update login set pin = '"+pin1+"' where card_no = '"+cardNumber+"'";
+                String q2 = "update signupthree set pin = '"+pin1+"' where card_no = '"+cardNumber+"'";
 
                 c.statement.executeUpdate(q1);
                 c.statement.executeUpdate(q2);
-                c.statement.executeUpdate(q3);
 
                 JOptionPane.showMessageDialog(null,"PIN changed successfully");
                 dispose();
-                new MainClass(pin);
+                new MainClass(cardNumber);
 
             } else if (e.getSource()==b2) {
-                new MainClass(pin);
+                new MainClass(cardNumber);
                 dispose();
             }
 

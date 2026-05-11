@@ -4,7 +4,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.sql.ResultSet;
+import java.sql.*;
 
 public class Login extends JFrame implements ActionListener {
     JLabel label1, label2, label3;
@@ -112,11 +112,45 @@ public class Login extends JFrame implements ActionListener {
                     return;
                 }
 
-                String q = "select * from login where card_no = '"+card_no+"' and pin = '"+pin+"'";
-                ResultSet resultSet = c.statement.executeQuery(q);
+                if(!card_no.matches("\\d{16}")){
+
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "Card Number must be 16 digits"
+                    );
+
+                    return;
+                }
+
+                if(!pin.matches("\\d{4}")){
+
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "PIN must be 4 digits"
+                    );
+
+                    return;
+                }
+
+                String q = """
+                    SELECT *
+                    FROM accounts
+                    WHERE card_number = ?
+                    AND pin = ?
+                    """;
+
+                PreparedStatement ps =
+                        c.connection.prepareStatement(q);
+
+                ps.setLong(1, Long.parseLong(card_no));
+                ps.setString(2, pin);
+
+                ResultSet resultSet = ps.executeQuery();
                 if(resultSet.next()){
+                    int accountId =
+                            resultSet.getInt("account_id");
                     dispose();
-                    new MainClass(pin);
+                    new MainClass(accountId);
                 }else{
                     JOptionPane.showMessageDialog(null,"Incorrect Card Number Or Pin");
                 }

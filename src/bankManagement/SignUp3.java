@@ -5,6 +5,7 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.*;
 
 import java.util.Random;
 
@@ -16,9 +17,9 @@ public class SignUp3 extends JFrame implements ActionListener {
 
     JButton c,s;
 
-    String formno;
-    public SignUp3(String formno) {
-        this.formno = formno;
+    int customerId;
+    public SignUp3(int customerId) {
+        this.customerId = customerId;
 
         ImageIcon i1 = new ImageIcon(ClassLoader.getSystemResource("icons/bank.png"));
         Image i2 = i1.getImage().getScaledInstance(100,100,Image.SCALE_DEFAULT);
@@ -159,7 +160,7 @@ public class SignUp3 extends JFrame implements ActionListener {
         l12.setBounds(700,10,100,30);
         add(l12);
 
-        JLabel l13 = new JLabel(formno);
+        JLabel l13 = new JLabel(String.valueOf(customerId));
         l13.setFont(new Font("Raleway", Font.BOLD,14));
         l13.setBounds(760,10,60,30);
         add(l13);
@@ -192,14 +193,26 @@ public class SignUp3 extends JFrame implements ActionListener {
 
     }
 
-
-
-    public static void main(String[] args) {
-        new SignUp3("");
-    }
-
     @Override
     public void actionPerformed(ActionEvent e) {
+
+        long accountNumber =
+                Math.abs(
+                        100000000000L +
+                                new Random().nextLong(900000000000L)
+                );
+
+        long cardNumber =
+                Math.abs(
+                        4000000000000000L +
+                                new Random().nextLong(1000000000000000L)
+                );
+
+        int generatedPin =
+                1000 + new Random().nextInt(9000);
+
+        String pin = String.valueOf(generatedPin);
+
         String atype = null;
         if (r1.isSelected()){
             atype = "Saving Account";
@@ -211,32 +224,7 @@ public class SignUp3 extends JFrame implements ActionListener {
             atype = "Recurring Deposit Account";
         }
 
-        Random ran = new Random();
-        long first7 = (ran.nextLong() % 90000000L) + 1409963000000000L;
-        String cardno = "" + Math.abs(first7);
 
-        long first3 = (ran.nextLong() % 9000L)+ 1000L;
-        String pin = "" + Math.abs(first3);
-
-        String fac = "";
-        if(c1.isSelected()){
-            fac = fac+"ATM CARD ";
-        }
-        if (c2.isSelected()) {
-            fac = fac+"Internet Banking";
-        }
-        if (c3.isSelected()) {
-            fac = fac+"Mobile Banking";
-        }
-        if (c4.isSelected()) {
-            fac = fac+"EMAIL Alerts";
-        }
-        if (c5.isSelected()) {
-            fac=fac+"Cheque Book";
-        }
-        if (c6.isSelected()) {
-            fac=fac+"E-Statement";
-        }
 
         if(!c7.isSelected()){
             JOptionPane.showMessageDialog(null,"Please accept declaration");
@@ -244,17 +232,91 @@ public class SignUp3 extends JFrame implements ActionListener {
         }
 
         try {
-            if (e.getSource()==s){
-                if (atype==null){
-                    JOptionPane.showMessageDialog(null,"Fill all the fields");
-                }else {
-                    Conn c1 = new Conn();
-                    String q1 = "insert into signupthree values('"+formno+"', '"+atype+"','"+cardno+"','"+pin+"','"+fac+"')";
-                    String q2 = "insert into login values('"+formno+"','"+cardno+"','"+pin+"')";
-                    c1.statement.executeUpdate(q1);
-                    c1.statement.executeUpdate(q2);
-                    JOptionPane.showMessageDialog(null,"Card Number : "+cardno+"\n Pin : "+pin );
-                    new Deposit(pin);
+            if (e.getSource() == s) {
+                if (atype == null) {
+
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "Please select account type"
+                    );
+
+                    return;
+                }
+
+                Conn conn = new Conn();
+
+                String accountQuery = """
+                    INSERT INTO accounts
+                    (
+                        customer_id,
+                        account_number,
+                        card_number,
+                        pin,
+                        account_type
+                    )
+                    VALUES (?, ?, ?, ?, ?)
+                    """;
+
+                PreparedStatement ps =
+                        conn.connection.prepareStatement(
+                                accountQuery,
+                                PreparedStatement.RETURN_GENERATED_KEYS
+                        );
+
+                ps.setInt(1, customerId);
+                ps.setLong(2, accountNumber);
+                ps.setLong(3, cardNumber);
+                ps.setString(4, pin);
+                ps.setString(5, atype);
+
+                ps.executeUpdate();
+
+                ResultSet rs = ps.getGeneratedKeys();
+
+                if(rs.next()){
+
+                    int accountId = rs.getInt(1);
+
+                    String servicesQuery = """
+                        INSERT INTO services
+                        (
+                            account_id,
+                            atm_card,
+                            internet_banking,
+                            mobile_banking,
+                            email_alerts,
+                            cheque_book,
+                            e_statement
+                        )
+                        VALUES (?, ?, ?, ?, ?, ?, ?)
+                        """;
+
+                    PreparedStatement servicePs =
+                            conn.connection.prepareStatement(
+                                    servicesQuery
+                            );
+
+                    servicePs.setInt(1, accountId);
+
+                    servicePs.setBoolean(2, c1.isSelected());
+                    servicePs.setBoolean(3, c2.isSelected());
+                    servicePs.setBoolean(4, c3.isSelected());
+                    servicePs.setBoolean(5, c4.isSelected());
+                    servicePs.setBoolean(6, c5.isSelected());
+                    servicePs.setBoolean(7, c6.isSelected());
+
+                    servicePs.executeUpdate();
+
+                    JOptionPane.showMessageDialog(
+                            null,
+                            "Account Created Successfully\n\n" +
+                                    "Account Number : " + accountNumber +
+                                    "\nCard Number : " + cardNumber +
+                                    "\nPIN : " + pin
+                    );
+
+                    new Deposit(String.valueOf(cardNumber));
+
                     dispose();
                 }
             } else if (e.getSource()==c) {
@@ -265,5 +327,10 @@ public class SignUp3 extends JFrame implements ActionListener {
             E.printStackTrace();
             JOptionPane.showMessageDialog(null,"Something went wrong. Please try again");
         }
+    }
+
+
+    public static void main(String[] args) {
+        new SignUp3(0);
     }
 }

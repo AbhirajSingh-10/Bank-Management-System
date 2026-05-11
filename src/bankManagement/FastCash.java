@@ -9,9 +9,9 @@ import java.util.Date;
 
 public class FastCash extends JFrame implements ActionListener {
     JButton b1,b2,b3,b4,b5,b6,b7;
-    String pin;
-    FastCash(String pin){
-        this.pin =pin;
+    String cardNumber;
+    FastCash(String cardNumber){
+        this.cardNumber = cardNumber;
 
         ImageIcon i1 = new ImageIcon(ClassLoader.getSystemResource("icons/atm2.png"));
         Image i2 = i1.getImage().getScaledInstance(1550,830,Image.SCALE_DEFAULT);
@@ -90,17 +90,19 @@ public class FastCash extends JFrame implements ActionListener {
     public void actionPerformed(ActionEvent e) {
         if(e.getSource()==b7){
             dispose();
-            new MainClass(pin);
+            new MainClass(cardNumber);
         }else{
             String amount = ((JButton)e.getSource()).getText().substring(4);
             Conn c = new Conn();
             Date date = new Date();
 
             try{
-                ResultSet resultSet = c.statement.executeQuery("select * from bank where pin = '"+pin+"'");
+                ResultSet resultSet = c.statement.executeQuery(
+                        "select * from bank_transactions where card_number = '"+cardNumber+"'"
+                );
                 int balance =0;
                 while (resultSet.next()){
-                    if (resultSet.getString("type").equals("Deposit")){
+                    if (resultSet.getString("transaction_type").equals("Deposit")){
                         balance += Integer.parseInt(resultSet.getString("amount"));
                     }else {
                         balance -= Integer.parseInt(resultSet.getString("amount"));
@@ -112,8 +114,13 @@ public class FastCash extends JFrame implements ActionListener {
                     return;
                 }
 
-                c.statement.executeUpdate("insert into bank values('"+pin+"','"+date+"', 'withdrawl', '"+amount+"')");
+                c.statement.executeUpdate(
+                        "insert into bank_transactions(card_number, transaction_type, amount) values('"
+                                + cardNumber + "', 'Withdrawal', '" + amount + "')"
+                );
                 JOptionPane.showMessageDialog(null, "Rs. "+amount+" Debited Successfully");
+                dispose();
+                new MainClass(cardNumber);
             } catch (Exception ex) {
                 ex.printStackTrace();
             }

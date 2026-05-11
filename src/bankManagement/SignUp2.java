@@ -4,15 +4,16 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.sql.*;
 
 public class SignUp2 extends JFrame implements ActionListener {
     JComboBox comboBox,comboBox2,comboBox3,comboBox4,comboBox5;
     JTextField textPan,textAadhar;
     JRadioButton r1,r2, e1,e2;
     JButton next;
-    String formno;
+    int customerId;
 
-    SignUp2(String formno){
+    SignUp2(int customerId){
         super("APPLICATION FORM");
 
         ImageIcon i1 = new ImageIcon(ClassLoader.getSystemResource("icons/bank.png"));
@@ -22,7 +23,7 @@ public class SignUp2 extends JFrame implements ActionListener {
         image.setBounds(150,5,100,100);
         add(image);
 
-        this.formno = formno;
+        this.customerId = customerId;
 
         JLabel l1 = new JLabel("Page 2 :-");
         l1.setFont(new Font("Raleway", Font.BOLD,22));
@@ -156,12 +157,12 @@ public class SignUp2 extends JFrame implements ActionListener {
         buttonGroup2.add(e1);
         buttonGroup2.add(e2);
 
-        JLabel l12 = new JLabel("Form No : ");
+        JLabel l12 = new JLabel("Customer ID : ");
         l12.setFont(new Font("Raleway", Font.BOLD,14));
         l12.setBounds(700,10,100,30);
         add(l12);
 
-        JLabel l13 = new JLabel(formno);
+        JLabel l13 = new JLabel(String.valueOf(customerId));
         l13.setFont(new Font("Raleway", Font.BOLD,14));
         l13.setBounds(760,10,60,30);
         add(l13);
@@ -192,23 +193,13 @@ public class SignUp2 extends JFrame implements ActionListener {
         String occ = (String) comboBox5.getSelectedItem();
 
         String pan = textPan.getText().trim();
-        String aadhar = textAadhar.getText().trim();
+        String aadhaar = textAadhar.getText().trim();
 
-        String scitizen = " ";
-        if(r1.isSelected()){
-            scitizen= "Yes";
-        }else if(r2.isSelected()){
-            scitizen = "No";
-        }
+        boolean scitizen = r1.isSelected();
 
-        String eaccount = " ";
-        if(e1.isSelected()){
-            eaccount= "Yes";
-        }else if(e2.isSelected()){
-            eaccount = "No";
-        }
+        boolean eaccount = e1.isSelected();
 
-        if(pan.isEmpty() || aadhar.isEmpty()){
+        if(pan.isEmpty() || aadhaar.isEmpty()){
             JOptionPane.showMessageDialog(null,"Fill all fields");
         }else
 
@@ -221,7 +212,7 @@ public class SignUp2 extends JFrame implements ActionListener {
             return;
         }
 
-        if(!aadhar.matches("\\d{12}")){
+        if(!aadhaar.matches("\\d{12}")){
 
             JOptionPane.showMessageDialog(
                     null,
@@ -230,11 +221,22 @@ public class SignUp2 extends JFrame implements ActionListener {
             return;
         }
 
-        if(scitizen.isBlank() || eaccount.isBlank()){
+        if(!r1.isSelected() && !r2.isSelected()){
 
             JOptionPane.showMessageDialog(
                     null,
-                    "Please select all options");
+                    "Please select Senior Citizen option"
+            );
+
+            return;
+        }
+
+        if(!e1.isSelected() && !e2.isSelected()){
+
+            JOptionPane.showMessageDialog(
+                    null,
+                    "Please select Existing Account option"
+            );
 
             return;
         }
@@ -242,19 +244,38 @@ public class SignUp2 extends JFrame implements ActionListener {
         try{
 
                 Conn c1 = new Conn();
-                String q = "INSERT INTO signuptwo VALUES('"
-                        + formno + "', '"
-                        + rel + "', '"
-                        + cate + "', '"
-                        + inc + "', '"
-                        + edu + "', '"
-                        + occ + "', '"
-                        + pan + "', '"
-                        + aadhar + "', '"
-                        + scitizen + "', '"
-                        + eaccount + "')";
-                c1.statement.executeUpdate(q);
-                new SignUp3(formno);
+                String q = """
+                    UPDATE customers
+                    SET
+                        religion = ?,
+                        category = ?,
+                        income = ?,
+                        education = ?,
+                        occupation = ?,
+                        pan_number = ?,
+                        aadhaar_number = ?,
+                        senior_citizen = ?,
+                        existing_account = ?
+                    WHERE customer_id = ?""";
+
+            PreparedStatement ps =
+                    c1.connection.prepareStatement(q);
+
+            ps.setString(1, rel);
+            ps.setString(2, cate);
+            ps.setString(3, inc);
+            ps.setString(4, edu);
+            ps.setString(5, occ);
+            ps.setString(6, pan);
+            ps.setString(7, aadhaar);
+
+            ps.setBoolean(8, scitizen);
+            ps.setBoolean(9, eaccount);
+
+            ps.setInt(10, customerId);
+
+            ps.executeUpdate();
+                new SignUp3(customerId);
                 dispose();
 
         } catch (Exception ex) {
@@ -265,7 +286,7 @@ public class SignUp2 extends JFrame implements ActionListener {
     }
 
     public static void main(String[] args) {
-        new SignUp2("");
+        new SignUp2(0);
     }
 
 

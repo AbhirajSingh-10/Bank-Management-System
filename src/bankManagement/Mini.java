@@ -7,10 +7,10 @@ import java.awt.event.ActionListener;
 import java.sql.ResultSet;
 
 public class Mini extends JFrame implements ActionListener {
-    String pin;
+    String cardNumber;
     JButton button;
-    Mini(String pin){
-        this.pin = pin;
+    Mini(String cardNumber){
+        this.cardNumber = cardNumber;
 
         JLabel label1 = new JLabel();
         JScrollPane scrollPane = new JScrollPane(label1);
@@ -34,10 +34,15 @@ public class Mini extends JFrame implements ActionListener {
         try{
             Conn c = new Conn();
 
-            ResultSet resultSet = c.statement.executeQuery("select * from bank where pin = '"+pin+"' order by date desc limit 10");
+            ResultSet resultSet = c.statement.executeQuery("select * from bank_transactions where card_number = '"+cardNumber+"' order by transaction_time desc limit 10");
 
             while(resultSet.next()){
-                label3.setText("Card Number:  "+ resultSet.getString("card_no").substring(0,4) + "XXXXXXXX"+ resultSet.getString("card_no").substring(12));
+                label3.setText(
+                        "Card Number:  " +
+                                cardNumber.substring(0,4) +
+                                "XXXXXXXX" +
+                                cardNumber.substring(12)
+                );
             }
         }catch (Exception e){
             e.printStackTrace();
@@ -46,11 +51,11 @@ public class Mini extends JFrame implements ActionListener {
         try{
             int balance = 0;
             Conn c = new Conn();
-            ResultSet resultSet = c.statement.executeQuery("select * from bank where pin = '"+pin+"'");
+            ResultSet resultSet = c.statement.executeQuery("select * from bank_transactions where card_number = '"+cardNumber+"'");
 
             while (resultSet.next()){
-                label1.setText(label1.getText() + "<html>"+resultSet.getString("date")+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+resultSet.getString("type")+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+resultSet.getString("amount")+ "<br><br></html>");
-                if (resultSet.getString("type").equals("Deposit")){
+                label1.setText(label1.getText() + "<html>"+resultSet.getString("transaction_time")+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+resultSet.getString("type")+"&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"+resultSet.getString("amount")+ "<br><br></html>");
+                if (resultSet.getString("transaction_type").equals("Deposit")){
                     balance += Integer.parseInt(resultSet.getString("amount"));
                 }else {
                     balance -= Integer.parseInt(resultSet.getString("amount"));

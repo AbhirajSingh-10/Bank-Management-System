@@ -9,11 +9,11 @@ import java.sql.ResultSet;
 
 public class BalanceEnquiry extends JFrame implements ActionListener {
 
-    String pin;
+    String cardNumber;
     JLabel label2;
     JButton b1;
-    BalanceEnquiry(String pin){
-        this.pin =pin;
+    BalanceEnquiry(String cardNumber){
+        this.cardNumber = cardNumber;
 
         ImageIcon i1 = new ImageIcon(ClassLoader.getSystemResource("icons/atm2.png"));
         Image i2 = i1.getImage().getScaledInstance(1550,830,Image.SCALE_DEFAULT);
@@ -44,9 +44,9 @@ public class BalanceEnquiry extends JFrame implements ActionListener {
         int balance =0;
         try{
             Conn c = new Conn();
-            ResultSet resultSet = c.statement.executeQuery("Select * from bank where pin = '"+pin+"'");
+            ResultSet resultSet = c.statement.executeQuery("select * from bank_transactions where card_number = '"+cardNumber+"'");
             while (resultSet.next()){
-                if (resultSet.getString("type").equals("Deposit")){
+                if (resultSet.getString("transaction_type").equals("Deposit")){
                     balance += Integer.parseInt(resultSet.getString("amount"));
                 }else {
                     balance -= Integer.parseInt(resultSet.getString("amount"));
@@ -54,6 +54,7 @@ public class BalanceEnquiry extends JFrame implements ActionListener {
             }
         }catch (Exception e){
             e.printStackTrace();
+            JOptionPane.showMessageDialog(null,"Something went wrong. Try again");
         }
 
         label2.setText(""+balance);
@@ -68,7 +69,7 @@ public class BalanceEnquiry extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         dispose();
-        new MainClass(pin);
+        new MainClass(cardNumber);
     }
 
     public static void main(String[] args) {

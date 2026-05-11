@@ -4,7 +4,7 @@ import java.sql.*;
 
 
 public class Conn {
-    java.sql.Connection connection;
+    Connection connection;
     Statement statement;
     public Conn(){
         try{

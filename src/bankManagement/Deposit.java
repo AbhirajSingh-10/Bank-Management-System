@@ -4,15 +4,15 @@ import javax.swing.*;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.util.Date;
+import java.sql.*;
 
 public class Deposit extends JFrame implements ActionListener {
-    String pin;
+    int accountId;
     TextField textField;
 
     JButton b1, b2;
-    Deposit(String pin){
-        this.pin = pin;
+    Deposit(int accountId){
+        this.accountId = accountId;
 
         ImageIcon i1 = new ImageIcon(ClassLoader.getSystemResource("icons/atm2.png"));
         Image i2 = i1.getImage().getScaledInstance(1550,830,Image.SCALE_DEFAULT);
@@ -62,28 +62,90 @@ public class Deposit extends JFrame implements ActionListener {
     @Override
     public void actionPerformed(ActionEvent e) {
         try {
-            String amount = textField.getText();
-            Date date = new Date();
             if (e.getSource() == b1) {
-                if (textField.getText().equals("")) {
+                String amountText = textField.getText().trim();
+
+                if (amountText.isEmpty()) {
                     JOptionPane.showMessageDialog(null, "Please enter the Amount you want to Deposit");
-                } else {
-                    Conn c = new Conn();
-                    c.statement.executeUpdate("insert into bank values('" + pin + "', '" + date + "','Deposit', '" + amount + "')");
-                    JOptionPane.showMessageDialog(null, "Rs. " + amount + " Deposited Successfully");
-                    dispose();
-                    new MainClass(pin);
+                    return;
                 }
+
+                double amount;
+
+                try{
+                    amount = Double.parseDouble(amountText);
+                }catch (NumberFormatException ex){
+                    JOptionPane.showMessageDialog(null,"Invalid amount");
+                    return;
+                }
+
+                if(amount<=0){
+                    JOptionPane.showMessageDialog(null,"Amount must be greater than 0");
+                    return;
+                }
+
+                Conn conn = new Conn();
+
+                String transactionQuery = """
+                INSERT INTO transactions
+                (
+                    account_id,
+                    transaction_type,
+                    amount
+                )
+                VALUES (?, ?, ?)
+                """;
+
+                PreparedStatement transactionPs =
+                        conn.connection.prepareStatement(
+                                transactionQuery
+                        );
+
+                transactionPs.setInt(1, accountId);
+                transactionPs.setString(2, "DEPOSIT");
+                transactionPs.setDouble(3, amount);
+
+                transactionPs.executeUpdate();
+
+                String balanceQuery = """
+                    UPDATE accounts
+                    SET balance = balance + ?
+                    WHERE account_id = ?
+                    """;
+
+                PreparedStatement balancePs =
+                        conn.connection.prepareStatement(
+                                balanceQuery
+                        );
+
+                balancePs.setDouble(1, amount);
+                balancePs.setInt(2, accountId);
+
+                balancePs.executeUpdate();
+
+                JOptionPane.showMessageDialog(
+                        null,
+                        "Rs. " + amount + " Deposited Successfully"
+                );
+
+                dispose();
+
+                new MainClass(accountId);
+
             } else if (e.getSource() == b2) {
                 dispose();
-                new MainClass(pin);
+                new MainClass(accountId);
             }
         } catch (Exception E) {
             E.printStackTrace();
+            JOptionPane.showMessageDialog(
+                    null,
+                    "Something went wrong"
+            );
         }
     }
 
     public static void main(String[] args) {
-        new Deposit("");
+        new Deposit(0);
     }
 }
