@@ -12,9 +12,17 @@ logs/
 build/
 .gradle/
 
+# Compiled files
+out/
+target/
 
 # VS Code
 .vscode/
+
+# OS files
+.DS_Store
+Thumbs.db
+
 
 # Eclipse
 .project
